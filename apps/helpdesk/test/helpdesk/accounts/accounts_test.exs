@@ -6,9 +6,11 @@ defmodule Helpdesk.AccountsTest do
   describe "users" do
     alias Helpdesk.Accounts.User
 
-    @valid_attrs %{email: "some email", name: "some name"}
-    @update_attrs %{email: "some updated email", name: "some updated name"}
+    @valid_attrs %{email: "email@email.com", name: "some name"}
+    @valid_attrs_2 %{email: "email2#@email.com", name: "some name2"}
+    @update_attrs %{email: "email2@email.com", name: "some updated name"}
     @invalid_attrs %{email: nil, name: nil}
+    @duplicate_email_attrs %{email: "email@email.com", name: "some name"}
 
     def user_fixture(attrs \\ %{}) do
       {:ok, user} =
@@ -16,6 +18,13 @@ defmodule Helpdesk.AccountsTest do
         |> Enum.into(@valid_attrs)
         |> Accounts.create_user()
 
+      user
+    end
+    def secod_user_fixture(attrs \\ %{}) do
+      {:ok, user} =
+        attrs
+        |> Enum.into(@valid_attrs_2)
+        |> Accounts.create_user()
       user
     end
 
@@ -31,7 +40,7 @@ defmodule Helpdesk.AccountsTest do
 
     test "create_user/1 with valid data creates a user" do
       assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
-      assert user.email == "some email"
+      assert user.email == "email@email.com"
       assert user.name == "some name"
     end
 
@@ -39,11 +48,16 @@ defmodule Helpdesk.AccountsTest do
       assert {:error, %Ecto.Changeset{}} = Accounts.create_user(@invalid_attrs)
     end
 
+    test "create_user/1 with duplicate email returns error changeset" do
+      user = user_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_user(@duplicate_email_attrs)
+    end
+
     test "update_user/2 with valid data updates the user" do
       user = user_fixture()
       assert {:ok, user} = Accounts.update_user(user, @update_attrs)
       assert %User{} = user
-      assert user.email == "some updated email"
+      assert user.email == "email2@email.com"
       assert user.name == "some updated name"
     end
 
@@ -51,6 +65,13 @@ defmodule Helpdesk.AccountsTest do
       user = user_fixture()
       assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
       assert user == Accounts.get_user!(user.id)
+    end
+
+    test "update_user/2 with duplicate email data returns error changeset" do
+      _user = user_fixture()
+      user_2 = secod_user_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user_2, @duplicate_email_attrs)
+      assert user_2 == Accounts.get_user!(user_2.id)
     end
 
     test "delete_user/1 deletes the user" do
