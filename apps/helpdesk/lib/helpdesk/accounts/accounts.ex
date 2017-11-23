@@ -101,4 +101,17 @@ defmodule Helpdesk.Accounts do
   def change_user(%User{} = user) do
     User.changeset(user, %{})
   end
+
+  @doc """
+  """
+
+  def get_or_create_user(%{ id: id }) do
+    get_user!(id)
+  end
+
+  def get_or_create_user(user) do
+      {_, result } = create_user(user)
+      result
+  end
+
 end

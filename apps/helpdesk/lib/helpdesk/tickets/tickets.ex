@@ -19,6 +19,7 @@ defmodule Helpdesk.Tickets do
   """
   def list_tickets do
     Repo.all(Ticket)
+    |> Repo.preload(:customer)
   end
 
   @doc """
@@ -35,7 +36,10 @@ defmodule Helpdesk.Tickets do
       ** (Ecto.NoResultsError)
 
   """
-  def get_ticket!(id), do: Repo.get!(Ticket, id)
+  def get_ticket!(id) do
+    Repo.get!(Ticket, id)
+    |> Repo.preload(:customer)
+  end
 
   @doc """
   Creates a ticket.
@@ -49,12 +53,33 @@ defmodule Helpdesk.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_ticket(attrs \\ %{}) do
+  def create_ticket(%{customer: %Helpdesk.Accounts.User{}} = attrs) do
     %Ticket{}
-    |> Ticket.changeset(attrs)
+    |> Ticket.create_changeset(attrs)
     |> Repo.insert()
   end
 
+  def create_ticket(%{customer: %{id: id}} = attrs) do
+    customer = Helpdesk.Accounts.get_user!(id)
+    modified_attrs = Map.replace!(attrs, :customer, customer)
+    %Ticket{}
+    |> Ticket.create_changeset(modified_attrs)
+    |> Repo.insert()
+  end
+
+  def create_ticket(%{customer: customer} = attrs) do
+    {_status, new_customer} = Helpdesk.Accounts.create_user(customer)
+    modified_attrs = Map.replace!(attrs, :customer, new_customer)
+    %Ticket{}
+    |> Ticket.create_changeset(modified_attrs)
+    |> Repo.insert()
+  end
+
+  def create_ticket(attrs) do
+    %Ticket{}
+    |> Ticket.create_changeset(attrs)
+    |> Repo.insert()
+  end
   @doc """
   Updates a ticket.
 

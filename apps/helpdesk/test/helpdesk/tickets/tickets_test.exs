@@ -1,21 +1,26 @@
 defmodule Helpdesk.TicketsTest do
   use Helpdesk.DataCase
-
   alias Helpdesk.Tickets
 
   describe "tickets" do
     alias Helpdesk.Tickets.Ticket
-
-    @valid_attrs %{subject: "some subject"}
+    alias Helpdesk.AccountsTest, as: AccountsTest
+    @valid_attrs %{ subject: "some subject",
+                    customer: %{
+                        email: "abc@gmail.com",
+                        name: "hello",
+                      }
+                    }
     @update_attrs %{subject: "some updated subject"}
-    @invalid_attrs %{subject: nil}
+    @invalid_attrs %{subject: nil, customer: %{}}
 
     def ticket_fixture(attrs \\ %{}) do
+      user = AccountsTest.user_fixture()
+      params = Map.merge(%{customer: user}, @valid_attrs)
       {:ok, ticket} =
         attrs
-        |> Enum.into(@valid_attrs)
+        |> Enum.into(params)
         |> Tickets.create_ticket()
-
       ticket
     end
 
@@ -38,10 +43,19 @@ defmodule Helpdesk.TicketsTest do
       assert {:error, %Ecto.Changeset{}} = Tickets.create_ticket(@invalid_attrs)
     end
 
+    test "create_ticket/1 called multiple times with same user creates tickets" do
+      old_ticket = ticket_fixture()
+      user = old_ticket.customer
+      assert {:ok, %Ticket{} = ticket}  = Tickets.create_ticket(%{customer: user, subject: "abca"})
+      assert Tickets.get_ticket!(ticket.id) == ticket
+    end
+
     test "update_ticket/2 with valid data updates the ticket" do
       ticket = ticket_fixture()
+      user = ticket.customer.id
       assert {:ok, ticket} = Tickets.update_ticket(ticket, @update_attrs)
       assert %Ticket{} = ticket
+      assert ticket.customer.id == user
       assert ticket.subject == "some updated subject"
     end
 

@@ -2,24 +2,24 @@ defmodule Helpdesk.AccountsTest do
   use Helpdesk.DataCase
 
   alias Helpdesk.Accounts
+  @valid_attrs %{email: "email@email.com", name: "some name"}
+  def user_fixture(attrs \\ %{}) do
+    {:ok, user} =
+      attrs
+      |> Enum.into(@valid_attrs)
+      |> Accounts.create_user()
 
+    user
+  end
   describe "users" do
     alias Helpdesk.Accounts.User
 
-    @valid_attrs %{email: "email@email.com", name: "some name"}
     @valid_attrs_2 %{email: "email2#@email.com", name: "some name2"}
     @update_attrs %{email: "email2@email.com", name: "some updated name"}
     @invalid_attrs %{email: nil, name: nil}
     @duplicate_email_attrs %{email: "email@email.com", name: "some name"}
 
-    def user_fixture(attrs \\ %{}) do
-      {:ok, user} =
-        attrs
-        |> Enum.into(@valid_attrs)
-        |> Accounts.create_user()
 
-      user
-    end
     def secod_user_fixture(attrs \\ %{}) do
       {:ok, user} =
         attrs

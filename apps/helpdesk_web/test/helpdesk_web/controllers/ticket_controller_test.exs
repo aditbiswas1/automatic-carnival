@@ -4,9 +4,14 @@ defmodule HelpdeskWeb.TicketControllerTest do
   alias Helpdesk.Tickets
   alias Helpdesk.Tickets.Ticket
 
-  @create_attrs %{subject: "some subject"}
+  @create_attrs  %{ subject: "some subject",
+                  customer: %{
+                      email: "abc@gmail.com",
+                      name: "hello",
+                    }
+                  }
   @update_attrs %{subject: "some updated subject"}
-  @invalid_attrs %{subject: nil}
+  @invalid_attrs %{subject: nil, customer: %{}}
 
   def fixture(:ticket) do
     {:ok, ticket} = Tickets.create_ticket(@create_attrs)
