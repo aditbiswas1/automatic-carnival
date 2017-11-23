@@ -16,6 +16,7 @@ defmodule HelpdeskWeb.Router do
   scope "/api", HelpdeskWeb do
     pipe_through :api # Use the default browser stack
     resources "/users", UserController, except: [:new, :edit]
+    resources "/tickets", TicketController, except: [:new, :edit]
     get "/", PageController, :index
   end
 
