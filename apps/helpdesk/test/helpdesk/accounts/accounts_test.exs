@@ -25,6 +25,7 @@ defmodule Helpdesk.AccountsTest do
         attrs
         |> Enum.into(@valid_attrs_2)
         |> Accounts.create_user()
+
       user
     end
 
@@ -49,7 +50,7 @@ defmodule Helpdesk.AccountsTest do
     end
 
     test "create_user/1 with duplicate email returns error changeset" do
-      user = user_fixture()
+      _user = user_fixture()
       assert {:error, %Ecto.Changeset{}} = Accounts.create_user(@duplicate_email_attrs)
     end
 
