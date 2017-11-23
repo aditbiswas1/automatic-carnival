@@ -21,7 +21,7 @@ defmodule Helpdesk.Tickets.Ticket do
   def create_changeset(%Ticket{} = ticket, attrs) do
     ticket
     |> cast(attrs, [:subject])
-    |> validate_required([:subject])
-    |> put_assoc(:customer, attrs.customer)
+    |> put_assoc(:customer, attrs["customer"])
+    |> validate_required([:subject, :customer])
   end
 end

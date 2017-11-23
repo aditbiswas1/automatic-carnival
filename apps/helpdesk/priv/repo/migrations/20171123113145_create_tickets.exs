@@ -4,7 +4,7 @@ defmodule Helpdesk.Repo.Migrations.CreateTickets do
   def change do
     create table(:tickets) do
       add :subject, :string
-      add :customer_id, references(:users, on_delete: :nothing)
+      add :customer_id, references(:users, on_delete: :nothing), null: false
 
       timestamps()
     end

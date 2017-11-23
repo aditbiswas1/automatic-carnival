@@ -53,25 +53,22 @@ defmodule Helpdesk.Tickets do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_ticket(%{customer: %Helpdesk.Accounts.User{}} = attrs) do
+  def create_ticket(%{"customer" => %Helpdesk.Accounts.User{}} = attrs) do
     %Ticket{}
     |> Ticket.create_changeset(attrs)
     |> Repo.insert()
   end
 
-  def create_ticket(%{customer: %{id: id}} = attrs) do
-    customer = Helpdesk.Accounts.get_user!(id)
-    modified_attrs = Map.replace!(attrs, :customer, customer)
-    %Ticket{}
-    |> Ticket.create_changeset(modified_attrs)
-    |> Repo.insert()
-  end
+  def create_ticket(%{"customer" => customer} = attrs) do
+    fetched_customer = case customer do
+                         %{"id" => id} -> Helpdesk.Accounts.get_user!(id)
+                         _ -> {_status , result} = Helpdesk.Accounts.create_user(customer)
+                              result
+                       end
 
-  def create_ticket(%{customer: customer} = attrs) do
-    {_status, new_customer} = Helpdesk.Accounts.create_user(customer)
-    modified_attrs = Map.replace!(attrs, :customer, new_customer)
-    %Ticket{}
-    |> Ticket.create_changeset(modified_attrs)
+    modified_attrs = Map.drop(attrs, ["customer"])
+    modified_attrs = Map.merge(%{"customer" => fetched_customer}, modified_attrs)
+    %Ticket{} |> Ticket.create_changeset(modified_attrs)
     |> Repo.insert()
   end
 

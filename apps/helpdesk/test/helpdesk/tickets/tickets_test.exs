@@ -5,18 +5,18 @@ defmodule Helpdesk.TicketsTest do
   describe "tickets" do
     alias Helpdesk.Tickets.Ticket
     alias Helpdesk.AccountsTest, as: AccountsTest
-    @valid_attrs %{ subject: "some subject",
-                    customer: %{
+    @valid_attrs %{ "subject" => "some subject",
+                    "customer" => %{
                         email: "abc@gmail.com",
                         name: "hello",
                       }
                     }
     @update_attrs %{subject: "some updated subject"}
-    @invalid_attrs %{subject: nil, customer: %{}}
+    @invalid_attrs %{"subject" => nil, "customer" => %{}}
 
     def ticket_fixture(attrs \\ %{}) do
       user = AccountsTest.user_fixture()
-      params = Map.merge(%{customer: user}, @valid_attrs)
+      params = Map.replace!(@valid_attrs, "customer", user)
       {:ok, ticket} =
         attrs
         |> Enum.into(params)
@@ -46,7 +46,8 @@ defmodule Helpdesk.TicketsTest do
     test "create_ticket/1 called multiple times with same user creates tickets" do
       old_ticket = ticket_fixture()
       user = old_ticket.customer
-      assert {:ok, %Ticket{} = ticket}  = Tickets.create_ticket(%{customer: user, subject: "abca"})
+      assert {:ok, %Ticket{} = ticket}  = Tickets.create_ticket(%{"customer" => user,
+                                                                  "subject" => "abca"})
       assert Tickets.get_ticket!(ticket.id) == ticket
     end
 
