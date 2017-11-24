@@ -52,6 +52,7 @@ defmodule Helpdesk.Tickets do
       iex> create_ticket(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
+  TODO : think of a cleaner way to do this
   """
   def create_ticket(%{"customer" => %Helpdesk.Accounts.User{}} = attrs) do
     %Ticket{}
@@ -61,10 +62,9 @@ defmodule Helpdesk.Tickets do
 
   def create_ticket(%{"customer" => customer} = attrs) do
     {status, fetched_customer} = Helpdesk.Accounts.get_or_create_user(customer)
-    if :error == status, do: {status, fetched_customer} 
+    if :error == status, do: {status, fetched_customer}
 
-    modified_attrs = Map.drop(attrs, ["customer"])
-    modified_attrs = Map.merge(%{"customer" => fetched_customer}, modified_attrs)
+    modified_attrs = Map.replace!(attrs, "customer", fetched_customer)
     %Ticket{} |> Ticket.create_changeset(modified_attrs)
     |> Repo.insert()
   end
