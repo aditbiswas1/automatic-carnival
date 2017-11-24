@@ -51,6 +51,17 @@ defmodule Helpdesk.TicketsTest do
       assert Tickets.get_ticket!(ticket.id) == ticket
     end
 
+    test "create_ticket/1 with only email creates a ticket against existing user" do
+      ticket = ticket_fixture()
+      email = ticket.customer.email
+      ticket_params = %{
+          "customer" => %{"email" => email},
+          "subject" => "something"
+      }
+      assert {:ok, %Ticket{} = ticket} = Tickets.create_ticket(ticket_params)
+
+      assert Tickets.get_ticket!(ticket.id) == ticket
+    end
     test "update_ticket/2 with valid data updates the ticket" do
       ticket = ticket_fixture()
       user = ticket.customer.id

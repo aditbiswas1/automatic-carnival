@@ -60,11 +60,8 @@ defmodule Helpdesk.Tickets do
   end
 
   def create_ticket(%{"customer" => customer} = attrs) do
-    fetched_customer = case customer do
-                         %{"id" => id} -> Helpdesk.Accounts.get_user!(id)
-                         _ -> {_status , result} = Helpdesk.Accounts.create_user(customer)
-                              result
-                       end
+    {status, fetched_customer} = Helpdesk.Accounts.get_or_create_user(customer)
+    if :error == status, do: {status, fetched_customer} 
 
     modified_attrs = Map.drop(attrs, ["customer"])
     modified_attrs = Map.merge(%{"customer" => fetched_customer}, modified_attrs)

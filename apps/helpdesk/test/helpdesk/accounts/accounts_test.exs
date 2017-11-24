@@ -85,5 +85,20 @@ defmodule Helpdesk.AccountsTest do
       user = user_fixture()
       assert %Ecto.Changeset{} = Accounts.change_user(user)
     end
+
+    test "get_or_create_user/1 creates user when user does not exist" do
+      {:ok, user} = Accounts.get_or_create_user(@valid_attrs)
+      assert user == Accounts.get_user!(user.id)
+    end
+
+    test "get_or_create_user/1 returns user when user is present" do
+      user = user_fixture()
+      {:ok, fetched_user} = Accounts.get_or_create_user(%{"email" => user.email})
+      assert fetched_user == user
+    end
+
+    test "get_or_create_user/1 returns ecto error with invalid params" do
+      {:error, %Ecto.Changeset{}} = Accounts.get_or_create_user(@invalid_attrs)
+    end
   end
 end

@@ -103,15 +103,20 @@ defmodule Helpdesk.Accounts do
   end
 
   @doc """
+  Returns a User
+  ## Exmaples
+    iex> get
   """
-
-  def get_or_create_user(%{ id: id }) do
-    get_user!(id)
-  end
-
-  def get_or_create_user(user) do
-      {_, result } = create_user(user)
-      result
-  end
-
+  def get_or_create_user(attrs \\ %{}) do
+      case attrs do
+          %{"email" => nil} -> create_user(attrs)
+          %{"email" => email} -> result = Repo.get_by(User, email: email)
+                            if result do
+                                {:ok, result}
+                            else
+                                create_user(attrs)
+                            end
+          _ -> create_user(attrs)
+      end
+   end
 end
